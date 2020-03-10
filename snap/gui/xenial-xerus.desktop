@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Xenial Xerus
+Exec=xenial-xerus %U
+Terminal=false
+Type=Application
+Icon=${SNAP}/meta/gui/xenial-xerus.png
+StartupWMClass=xenial-xerus
+Comment=Download and install Ubuntu 16.04.6 in a VM

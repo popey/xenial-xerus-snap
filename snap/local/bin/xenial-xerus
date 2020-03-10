@@ -1,0 +1,63 @@
+#!/bin/bash
+
+#export QEMU_AUDIO_DRV=pa
+#QEMU_AUDIO_DRV=pa
+RELEASE="16.04.6"
+CODENAME="xenial-xerus"
+ARCHITECTURE="amd64"
+ISOHOST="releases.ubuntu.com"
+ISOURL="http://$ISOHOST/releases/$RELEASE/ubuntu-$RELEASE-desktop-$ARCHITECTURE.iso"
+ISOFILE="$SNAP_USER_COMMON"/ubuntu-$RELEASE-desktop-$ARCHITECTURE.iso
+DISKFILE="$SNAP_USER_COMMON"/$CODENAME.qcow2
+DISKSIZE="16G"
+LAUNCHER="$SNAP_USER_COMMON"/launch
+INSTALLER="$SNAP_USER_COMMON"/install
+
+echo "*** Checking for kvm interface connection"
+if snapctl is-connected kvm; then
+  echo "INFO: kvm interface is connected"
+else
+  echo "ERROR: kvm interface is not connected. Run 'sudo snap connect precise-pangolin:kvm' then re-launch precise-pangolin."
+  exit 1
+fi
+
+echo "*** Checking for ISO"
+if [ ! -f "$ISOFILE" ]; then
+	if wget -c -O $ISOFILE $ISOURL; then
+		echo "Downloaded ISO"
+	else
+		echo "Failed to download base system"
+		exit 1
+	fi
+fi	
+
+echo "*** Checking for disk image"
+if [ ! -f "$DISKFILE" ]; then
+	qemu-img create -f qcow2 "$DISKFILE" "$DISKSIZE"
+fi
+
+echo "*** Checking for launch script"
+if [ ! -f "$LAUNCHER" ]; then
+    cp -a "$SNAP"/bin/launch "$LAUNCHER"
+fi
+
+echo "*** Checking for install script"
+if [ ! -f "$INSTALLER" ]; then
+    cp -a "$SNAP"/bin/install "$INSTALLER"
+fi
+
+echo "*** Check if installer has been run"
+# Probably a better way to do this, but checking the size of the macos qcow is probably best.
+# If it's over an arbitrary size, we can guess the install finished
+# On my machine a basic qcow is 262192 bytes, but let's put a buffer of 2x that
+qcowfilesize=$(stat -c %s "$DISKFILE")
+if [ $qcowfilesize -gt 524384 ]; then
+  echo "*** Looks like the install was done, launching"
+  echo "*** Launch!"
+  exec "$LAUNCHER" "$DISKFILE"
+else
+  echo "*** Looks like the install hasn't been done yet, lets install"
+  echo "*** Install!"
+  exec "$INSTALLER" "$DISKFILE" "$ISOFILE"
+fi
+
