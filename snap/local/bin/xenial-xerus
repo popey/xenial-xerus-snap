@@ -17,7 +17,7 @@ echo "*** Checking for kvm interface connection"
 if snapctl is-connected kvm; then
   echo "INFO: kvm interface is connected"
 else
-  echo "ERROR: kvm interface is not connected. Run 'sudo snap connect precise-pangolin:kvm' then re-launch precise-pangolin."
+  echo "ERROR: kvm interface is not connected. Run 'sudo snap connect xenial-xerus:kvm' then re-launch xenial-xerus."
   exit 1
 fi
 
