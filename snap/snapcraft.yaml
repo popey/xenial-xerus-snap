@@ -1,6 +1,7 @@
 name: xenial-xerus
 base: core18
-assumes: 2.43
+assumes: 
+  - snapd2.43
 version: '12.04.4'
 summary: Download and install Ubuntu 16.04.6 in a VM
 description: |
